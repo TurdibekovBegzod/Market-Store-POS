@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class Currency(BaseModel):
@@ -6,7 +7,8 @@ class Currency(BaseModel):
     code: str
     name: str
     symbol: str
-
+    updated_at: datetime
+    created_at: datetime
 
 class CurrencyCreate(BaseModel):
     code: str

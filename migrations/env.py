@@ -16,7 +16,7 @@ from api.config import Config
 # access to the values within the .ini file in use.
 config = context.config
 database_url = Config.DATABASE_LOCAL_URL
-print(Config.DATABASE_LOCSAL_URL)
+print(Config.DATABASE_LOCAL_URL)
 config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.

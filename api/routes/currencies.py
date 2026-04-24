@@ -28,3 +28,25 @@ async def get_currency_by_id(currency_id: int, db: AsyncSession = Depends(get_db
         )
     return result
 
+@router.put("/{currency_id}", response_model=CurrencyRead, status_code=status.HTTP_200_OK)
+async def update_currency(currency_id: int, currency_update: CurrencyUpdate, db: AsyncSession = Depends(get_db)):
+    update_data = currency_update.model_dump(exclude_unset=True)
+    result = await currencies_service.update_currency(db=db, currency_id=currency_id, update_data=update_data)
+
+    if not result:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = f"Currency with id {currency_id} not found"
+        )
+    return result
+
+@router.delete("/{currency_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_currency(currency_id: int, db: AsyncSession = Depends(get_db)):
+    result = await currencies_service.delete_currency(db=db, currency_id=currency_id)
+
+    if not result:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = f"Currency with id {currency_id} not found or could not be deleted"
+        )   
+    return None
