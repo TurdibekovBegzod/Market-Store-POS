@@ -1,63 +1,56 @@
-import os
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6 import uic
-base_dir = os.path.dirname(os.path.abspath(__file__))
-ui_path = os.path.join(base_dir, "market.ui")
-class BarcodeApp(QMainWindow):
+from . import moduls 
+
+class MarketApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.ui = uic.loadUi(ui_path, self)
+        self.ui = uic.loadUi("market.ui", self)
         
-        self.sidebar_buttons = [
-            self.ui.btn_barcode, 
-            self.ui.btn_scanner, 
-            self.ui.pushButton_5
-        ]
+        # FastAPI-like Router Hub
+        self.app_router = moduls.AppRouter(self.ui)
         
-        # 1. Barcode, Scanner, Sozlamalar tugmalarini sahifalarga bog'lash
-        self.ui.btn_barcode.clicked.connect(lambda: self.update_ui(self.ui.btn_barcode, 0))
-        self.ui.btn_scanner.clicked.connect(lambda: self.update_ui(self.ui.btn_scanner, 1))
-        self.ui.pushButton_5.clicked.connect(lambda: self.update_ui(self.ui.pushButton_5, 2))
+        # Navigatsiya xaritasi
+        self.nav_map = {
+    self.ui.btn_side_barcode: "/barcode",
+    self.ui.btn_scanner_2: "/scanner",
+    self.ui.btn_sozlamalar: "/products",      # Sozlamalar bosilsa asosiy oyna
+    self.ui.btn_side_products: "/products",   # Products tugmasi
+    self.ui.btn_side_monitor: "/monitor",     # Monitor tugmasi
+    self.ui.btn_side_checking: "/checking"    # Checking tugmasi
+}
 
-        # 2. Edit va Yuklash tugmalarini bog'lash
-        self.ui.btn_edit.clicked.connect(self.handle_edit)
-        self.ui.btn_yuklash.clicked.connect(self.handle_upload)
+        self.setup_ui_events()
+        # Default route
+        self.handle_navigation(self.ui.btn_side_barcode, "/barcode")
 
-        # Dastur ochilganda Barcode sahifasi aktiv bo'lsin
-        self.update_ui(self.ui.btn_barcode, 0)
+    def setup_ui_events(self):
+        for btn, path in self.nav_map.items():
+            btn.clicked.connect(lambda checked, b=btn, p=path: self.handle_navigation(b, p))
         
-    def update_ui(self, clicked_button, page_index):
-        for btn in self.sidebar_buttons:
-            btn.setProperty("active", "false")
+        # Settings ichidagi tablar
+        self.ui.btn_tab_product.clicked.connect(lambda: self.app_router.products.switch_tab(1))
+        self.ui.btn_tab_arxiv.clicked.connect(lambda: self.app_router.products.switch_tab(2))
+        self.ui.btn_tab_template.clicked.connect(lambda: self.app_router.products.switch_tab(0))
+        self.ui.pushButton_4.clicked.connect(lambda: self.app_router.products.switch_tab(3))
         
-        # Bosilgan activ 
-        clicked_button.setProperty("active", "true")
-        
-        for btn in self.sidebar_buttons:
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
-            btn.update()
-        
-        # Sahifani almashtirish
-        self.ui.stackedWidget.setCurrentIndex(page_index)
-  
-    def handle_edit(self):
-        sheet_id = self.ui.lineEdit_edit.text()
-        if sheet_id:
-            print(f"Google Sheet ID saqlandi: {sheet_id}")
-        else:
-            print("Iltimos, Google Sheet ID kiriting!")
+        # Orqaga qaytish
+        self.ui.btn_asosiy_oyna.clicked.connect(lambda: self.ui.btn_side_barcode.click())
 
-    def handle_upload(self):
-        creds_path = self.ui.lineEdit_yukash.text()
-        if creds_path:
-            print(f"Credentials fayli yuklanmoqda: {creds_path}")
-        else:
-            print("Fayl yo'li ko'rsatilmadi!")
+    def handle_navigation(self, btn, path):
+        self.app_router.route(path)
+    
+        for side_btn in self.nav_map.keys():
+            # Agar bosilgan tugma bo'lsa active=True, bo'lmasa False
+            is_active = (side_btn == btn)
+            side_btn.setProperty("active", is_active)
+        
+        # side_btn.style().unpolish(side_btn)
+        # side_btn.style().polish(side_btn)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = BarcodeApp()
+    window = MarketApp()
     window.show()
     sys.exit(app.exec())
