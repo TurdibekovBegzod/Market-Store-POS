@@ -24,7 +24,7 @@ class Product(Base):
     template_id = Column(Integer, ForeignKey("product_templates.id"))
     template = relationship("ProductTemplate", back_populates="products")
 
-    metadata_ = Column(JSONB)
+    attributes = Column(JSONB)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -50,7 +50,7 @@ class ProductTemplate(Base):
     name = Column(String, index=True, nullable=False)
     description = Column(String)
 
-    metadata_ = Column(JSONB, default={})
+    attributes = Column(JSONB)
     products = relationship("Product", back_populates="template")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
