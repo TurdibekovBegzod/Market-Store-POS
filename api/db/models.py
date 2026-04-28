@@ -50,8 +50,13 @@ class ProductTemplate(Base):
     name = Column(String, index=True, nullable=False)
     description = Column(String)
 
-    attributes = Column(JSONB)
+    attributes = Column(JSONB, default=list)
+
     products = relationship("Product", back_populates="template")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        server_onupdate=func.now()
+    )

@@ -10,12 +10,12 @@ class ProductTemplate(BaseModel):
     name: str
     description: Optional[str] = None
     
-    attributes: dict[str, Any] = Field(default_factory=dict)
+    attributes: list[str] = Field(default_factory=list)
 
 class ProductTemplateCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    attributes: dict[str, Any] = Field(default_factory=dict)
+    attributes: list[str] = Field(default_factory=list)
 
 class ProductTemplateRead(ProductTemplate):
     pass
@@ -23,7 +23,7 @@ class ProductTemplateRead(ProductTemplate):
 class ProductTemplateCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    attributes: dict[str, Any] = Field(default_factory=dict)
+    attributes: list[str] = Field(default_factory=list)
 
 class ProductTemplateRead(ProductTemplate):
     pass
@@ -31,7 +31,7 @@ class ProductTemplateRead(ProductTemplate):
 class ProductTemplateUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    attributes: Optional[dict[str, Any]] = None
+    attributes: Optional[list['str']] = list()
 
 class ProductTemplateDelete(BaseModel):
     id: int
