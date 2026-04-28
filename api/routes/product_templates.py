@@ -3,7 +3,7 @@ from api.db.main import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.services.product_templates import ProductTemplateService
 from api.schemas.product_templates import ProductTemplateCreate, ProductTemplateRead, ProductTemplateUpdate, ProductTemplateDelete
-
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
 product_template_service = ProductTemplateService()
@@ -46,6 +46,14 @@ async def delete_product_template(template_id: int, db : AsyncSession = Depends(
     return {
         "message": f"Product template with id {template_id} deleted",
         "result": result
+    }
+
+@router.get("/{template_id}")
+async def get_product_template_by_id(template_id : int, db : AsyncSession = Depends(get_db)):
+    result = await product_template_service.get_product_template_by_id(db= db, template_id=template_id)
+
+    return {
+        f"Template with id {template_id}" : result
     }
 
 
