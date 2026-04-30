@@ -8,3 +8,4 @@ dotenv
 pytest
 aiosqlite
 requests
+passlib[argon2]

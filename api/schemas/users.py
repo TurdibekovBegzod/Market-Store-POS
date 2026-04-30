@@ -1,28 +1,33 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from uuid import UUID
 
-class User(BaseModel):
+class UserCreate(BaseModel):
+    password : str
     firstname : str
     lastname : str
-    email  : str
+    email  : EmailStr
 
-class UserCreate(User):
+class UserRead(BaseModel):
+    uid : UUID
+    firstname : str
+    lastname : str
+    email  : EmailStr
     password_hash : str
-
-class UserRead(User):
-    id : UUID
 
 class UserUpdate(BaseModel):
     firstname : str | None = None
     lastname : str | None = None
-    email  : str | None = None
-    password_hash : str | None = None
+    email  : EmailStr | None = None
+    password : str | None = None
 
 
 class UserDelete(BaseModel):
-    id : UUID
+    uid : UUID
 
 class UserLogin(BaseModel):
     email : str
     password_hash : str
+
+class UserEmail(BaseModel):
+    email : EmailStr
 

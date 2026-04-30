@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from api.services.products import ProductService
 from api.db.models import Product
 from api.db.main import get_db
-from api.schemas.products import ProductCreate, ProductUpdate, ProductRead, ProductDelete
+from api.schemas.products import ProductCreate, ProductUpdate, ProductRead
 import uuid
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
