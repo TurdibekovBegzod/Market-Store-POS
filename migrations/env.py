@@ -9,7 +9,7 @@ from alembic import context
 
 
 from api.db.main import Base
-from api.db.models import Product, Currency, ProductTemplate
+from api.db.models import Product, Currency, ProductTemplate, User
 from api.config import Config
 
 # this is the Alembic Config object, which provides
