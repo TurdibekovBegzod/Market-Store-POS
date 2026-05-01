@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from api.services.users import UserService
-from api.schemas.users  import UserCreate, UserEmail, UserRead
+from api.schemas.users  import UserCreate, UserEmail, UserRead, UserUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.db.main import get_db 
-from api.security.hash import hash_password
+from api.security.hash import hash_password, verify_password
+from pydantic import EmailStr
 import uuid
 
 router = APIRouter()
@@ -73,6 +74,38 @@ async def delete_user(user_uid : uuid.UUID, db : AsyncSession = Depends(get_db))
         'status': result
     } 
 
+@router.put("/", response_model=UserRead)
+async def update_user(
+    email: EmailStr,
+    password: str,
+    user_data: UserUpdate,
+    db: AsyncSession = Depends(get_db)
+):
+    user = await user_service.get_user_by_email(user_email=email, db=db)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not verify_password(password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+    user_dict = user_data.model_dump(exclude_unset=True)
+
+    if not user_dict:
+        raise HTTPException(status_code=400, detail="No data to update")
+
+    if "password" in user_dict:
+        user_dict["password_hash"] = hash_password(user_dict.pop("password"))
+
+    updated_user = await user_service.update_user(
+        user_data=user_dict,
+        user_email=email,
+        db=db
+    )
+
+    return updated_user
+    
+    
 
 
 

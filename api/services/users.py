@@ -46,5 +46,22 @@ class UserService:
         await db.commit()
 
         return True
+    
+    @staticmethod
+    async def update_user(db : AsyncSession,user_email : str, user_data : dict):
+        user_email = user_email
+
+        user = await UserService.get_user_by_email(
+            user_email=user_email,
+            db = db
+        )
+
+        for key, value in user_data.items():
+            setattr(user, key, value)
+
+        await db.commit()
+        await db.refresh(user)
+
+        return user
 
 

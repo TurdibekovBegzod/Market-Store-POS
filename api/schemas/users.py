@@ -13,12 +13,15 @@ class UserRead(BaseModel):
     lastname : str
     email  : EmailStr
     password_hash : str
+    is_active : bool
 
 class UserUpdate(BaseModel):
     firstname : str | None = None
     lastname : str | None = None
     email  : EmailStr | None = None
     password : str | None = None
+    is_active : bool | None = None
+
 
 
 class UserDelete(BaseModel):
