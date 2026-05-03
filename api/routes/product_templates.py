@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
 from api.db.main import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.services.product_templates import ProductTemplateService
 from api.schemas.product_templates import ProductTemplateCreate, ProductTemplateRead, ProductTemplateUpdate, ProductTemplateDelete
-from fastapi.responses import JSONResponse
+
+import uuid
+
+import os
+
+UPLOAD_DIR = os.path.join("api", "uploads", "img", "ProductTemplate")
 
 router = APIRouter()
 product_template_service = ProductTemplateService()
@@ -57,3 +62,31 @@ async def get_product_template_by_id(template_id : int, db : AsyncSession = Depe
     }
 
 
+
+
+@router.post("/upload/{template_id}")
+async def upload_image(template_id: int, file: UploadFile = File(...), db : AsyncSession = Depends(get_db)):
+    template = await product_template_service.get_product_template_by_id(template_id = template_id, db = db)
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File is not an image")
+
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+    ext = file.filename.split(".")[-1]
+    filename = f"{template_id}.{ext}"
+
+    filepath = os.path.join(UPLOAD_DIR, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(await file.read())
+
+    template.image = filepath
+    template_dict = {
+        'image' : template.image
+    }
+    await product_template_service.update_product_template(template_id=template_id, template_data = template_dict, db = db)
+
+    return {"image_url": f"{filepath}"}

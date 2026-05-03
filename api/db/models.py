@@ -59,6 +59,7 @@ class ProductTemplate(Base):
     description = Column(String)
 
     attributes = Column(JSONB, server_default=text("'[]'"))
+    image = Column(String)
 
     products = relationship("Product", back_populates="template")
 

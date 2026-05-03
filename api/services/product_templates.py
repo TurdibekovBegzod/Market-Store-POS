@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from datetime import datetime, timezone
 
-from api.db.models import ProductTemplate   
+from api.db.models import ProductTemplate
+from api.schemas.product_templates import ProductTemplate as ProductTemplateSchema
 
 class ProductTemplateService:
     @staticmethod
@@ -22,7 +23,7 @@ class ProductTemplateService:
         return result.scalars().all()
     
     @staticmethod
-    async def get_product_template_by_id(db: AsyncSession, template_id: int):
+    async def get_product_template_by_id(db: AsyncSession, template_id: int) -> ProductTemplateSchema:
         result = await db.execute(select(ProductTemplate).filter(ProductTemplate.id == template_id))
         template = result.scalars().first()
         if not template:

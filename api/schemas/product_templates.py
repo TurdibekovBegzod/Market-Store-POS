@@ -9,6 +9,7 @@ class ProductTemplate(BaseModel):
     id: int
     name: str
     description: Optional[str] = None
+    image : str
     
     attributes: list[str] = Field(default_factory=list)
 
