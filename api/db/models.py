@@ -25,8 +25,7 @@ class Product(Base):
     price = Column(Numeric(12, 2), nullable=False)
     quantity = Column(Integer, default=0)
 
-    currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)
-    currency = relationship("Currency", back_populates="products")
+    currency_code = Column(String(3), default="UZS")
 
     template_id = Column(Integer, ForeignKey("product_templates.id"))
     template = relationship("ProductTemplate", back_populates="products")
@@ -37,18 +36,6 @@ class Product(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
-class Currency(Base):
-    __tablename__ = "currencies"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, unique=True, nullable=False)
-    code = Column(String(3), unique=True, nullable=False)
-    symbol = Column(String(5))
-
-    products = relationship("Product", back_populates="currency")
-
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
 class ProductTemplate(Base):
