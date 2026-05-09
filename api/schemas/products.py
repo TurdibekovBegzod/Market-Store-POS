@@ -9,11 +9,11 @@ class Product(BaseModel):
     name: str
 
     description: str | None = None
+    currency_code : str | None = None 
 
     price: Decimal
     quantity: int
 
-    currency_id: int | None = None
     template_id: int | None = None
 
     attributes: list[str] = Field(default_factory=list)
@@ -25,11 +25,11 @@ class ProductCreate(BaseModel):
     barcode: str = Field(min_length=1)
     name: str = Field(min_length=1)
     description: str | None = None
+    currency_code : str
 
     price: Decimal = Field(gt=0)
     quantity: int = Field(ge=0)
 
-    currency_id: int = Field(gt=0)
     template_id: int | None = Field(default=None, gt=0)
 
     attributes: list[str] = Field(default_factory=list)
@@ -43,8 +43,8 @@ class ProductUpdate(BaseModel):
     description : str | None = None
     price : Decimal | None = None
     quantity : int | None = None
+    currency_code : str | None = None
 
-    currency_id : int | None = None
     template_id : int | None = None
 
     attributes : list[str] | None = None
