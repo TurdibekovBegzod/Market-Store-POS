@@ -1,16 +1,11 @@
-class BarcodeRouter:
+class BarcodeModule:
     def __init__(self, ui):
         self.ui = ui
+        self.setup_ui()
 
-    def activate(self):
-        self.ui.sidebar_stack.setCurrentIndex(0)
-        self.ui.stacked_ong.setCurrentIndex(0)
-        if hasattr(self.ui, 'stackedWidget'):
-            self.ui.stackedWidget.setCurrentIndex(0)
-        print("Barcode Router: activated")
-
-    def activate(self):
-        self.ui.sidebar_stack.setCurrentIndex(0) 
-        self.ui.stacked_ong.setCurrentIndex(0) 
-        if hasattr(self.ui, 'stackedWidget'):
-            self.ui.stackedWidget.setCurrentIndex(0)        
+    def setup_ui(self):
+        if hasattr(self.ui, 'btn_edit_sheet'):
+            self.ui.btn_edit_sheet.clicked.connect(self.edit_google_id)
+            
+    def edit_google_id(self):
+        print("Google Sheet ID tahrirlanmoqda...")

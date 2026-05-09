@@ -1,53 +1,96 @@
 import sys
+import os
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6 import uic
-from . import moduls 
+from moduls import AppRouter # Router importi
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class MarketApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.ui = uic.loadUi("market.ui", self)
+        uic.loadUi(os.path.join(BASE_DIR, "market.ui"), self)
+        self.router = AppRouter(self)
         
-        # FastAPI-like Router Hub
-        self.app_router = moduls.AppRouter(self.ui)
-        
-        # Navigatsiya xaritasi
-        self.nav_map = {
-    self.ui.btn_side_barcode: "/barcode",
-    self.ui.btn_scanner_2: "/scanner",
-    self.ui.btn_sozlamalar: "/products",      # Sozlamalar bosilsa asosiy oyna
-    self.ui.btn_side_products: "/products",   # Products tugmasi
-    self.ui.btn_side_monitor: "/monitor",     # Monitor tugmasi
-    self.ui.btn_side_checking: "/checking"    # Checking tugmasi
-}
 
-        self.setup_ui_events()
-        # Default route
-        self.handle_navigation(self.ui.btn_side_barcode, "/barcode")
+        # 2. Modullarni router orqali olish
+        self.init_signals()
+        
+        # 3. Default sahifa - Foydalanuvchi talabi
+        self.router.route("/barcode")
 
-    def setup_ui_events(self):
-        for btn, path in self.nav_map.items():
-            btn.clicked.connect(lambda checked, b=btn, p=path: self.handle_navigation(b, p))
+    def init_signals(self):
+        """Tugmalarni ulash - Har bir tugma faqat bir marta ulansin"""
         
-        # Settings ichidagi tablar
-        self.ui.btn_tab_product.clicked.connect(lambda: self.app_router.products.switch_tab(1))
-        self.ui.btn_tab_arxiv.clicked.connect(lambda: self.app_router.products.switch_tab(2))
-        self.ui.btn_tab_template.clicked.connect(lambda: self.app_router.products.switch_tab(0))
-        self.ui.pushButton_4.clicked.connect(lambda: self.app_router.products.switch_tab(3))
-        
-        # Orqaga qaytish
-        self.ui.btn_asosiy_oyna.clicked.connect(lambda: self.ui.btn_side_barcode.click())
+        # Sidebar tugmalari
+        if hasattr(self, 'btn_side_barcode'):
+            self.btn_side_barcode.clicked.connect(lambda: self.router.route("/barcode"))
 
-    def handle_navigation(self, btn, path):
-        self.app_router.route(path)
-    
-        for side_btn in self.nav_map.keys():
-            # Agar bosilgan tugma bo'lsa active=True, bo'lmasa False
-            is_active = (side_btn == btn)
-            side_btn.setProperty("active", is_active)
         
-        # side_btn.style().unpolish(side_btn)
-        # side_btn.style().polish(side_btn)
+        if hasattr(self, 'btn_side_scanner'):
+            self.btn_side_scanner.clicked.connect(lambda: self.router.route("/scanner"))
+
+        if hasattr(self, 'btn_side_products'):
+            self.btn_side_products.clicked.connect(self.on_products_menu_clicked)
+
+        if hasattr(self, 'btn_sozlamalar'):
+            self.btn_sozlamalar.clicked.connect(self.on_products_menu_clicked)
+
+        # Monitor va Checking
+        if hasattr(self, 'btn_side_monitor'):
+            self.btn_side_monitor.clicked.connect(self.on_monitor_clicked)
+
+        if hasattr(self, 'btn_side_checking'):
+            self.btn_side_checking.clicked.connect(self.on_checking_clicked)
+        
+        self.router.template_edit_mod.template_saved_signal.connect(self.router.template_mod.refresh_data)
+        
+        # Tahrirlash/Qo'shish mantiqi
+        if hasattr(self, 'btn_add_template'):
+            # Plus (+) tugmasi bosilganda Routerning open_add_view funksiyasini chaqiradi
+            self.btn_add_template.clicked.connect(self.router.open_add_view)
+
+        if hasattr(self.router, 'template_edit_mod'):
+            # self.load_templates funksiyasi mavjudligiga ishonch hosil qiling
+            if hasattr(self, 'load_templates'):
+                self.router.template_edit_mod.template_saved_signal.connect(self.load_templates)
+                print("Signal muvaffaqiyatli bog'landi!")
+
+        if hasattr(self, 'btn_asosiy_oyna'):
+            try:
+                # Avvalgi ulanishlarni tozalaymiz
+                self.btn_asosiy_oyna.clicked.disconnect()
+            except:
+                pass
+
+            self.btn_asosiy_oyna.clicked.connect(
+                lambda: self.sidebar_stack.setCurrentWidget(self.page_barcode_scanner_Sozlamalar)
+            )
+            print("Signal: Asosiy oynaga qaytish (sidebar_stack orqali) muvaffaqiyatli ulandi!")
+        # Saqlash tugatilganda refresh_data ni chaqirish
+        self.router.template_edit_mod.template_saved_signal.connect(self.router.template_mod.refresh_data)
+        # Rasm tanlash tugmasini ulash
+        if hasattr(self, 'btn_select_photo'):
+            self.btn_select_photo.clicked.connect(self.router.template_edit_mod.select_image)
+
+        # Saqlash tugmasini ulash
+        if hasattr(self, 'template_edit_save'):
+            self.template_edit_save.clicked.connect(self.router.template_edit_mod.save_all_data)
+    def edit_existing_product(self, product_data):
+        """Qalamcha bosilganda ma'lumotlarni tahrirlash oynasiga yuboradi"""
+        self.router.route("/products_menu")
+
+        if hasattr(self.router, 'template_mod'):
+            self.router.template_mod.edit_product(product_data)
+
+    def on_products_menu_clicked(self):
+        self.router.route("/products_menu")
+
+    def on_monitor_clicked(self):
+        self.router.route("/monitor")
+
+    def on_checking_clicked(self):
+        self.router.route("/checking")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
