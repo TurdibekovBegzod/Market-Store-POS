@@ -3,7 +3,7 @@ from api.db.main import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.services.product_templates import ProductTemplateService
 from api.schemas.product_templates import ProductTemplateCreate, ProductTemplateRead, ProductTemplateUpdate, ProductTemplateDelete
-
+from fastapi.responses import FileResponse
 import uuid
 
 import os
@@ -18,7 +18,7 @@ async def get_product_templates(db : AsyncSession = Depends(get_db)):
     templates = await product_template_service.get_all_product_templates(db = db)
 
     return {
-        "message" : "All templates are ",
+        "message" : "All templates",
         "templates" : templates
     }
 
@@ -58,13 +58,14 @@ async def get_product_template_by_id(template_id : int, db : AsyncSession = Depe
     result = await product_template_service.get_product_template_by_id(db= db, template_id=template_id)
 
     return {
-        f"Template with id {template_id}" : result
+        "message" : f"Template with id {template_id}",
+        "template" : result
     }
 
 
 
 
-@router.post("/upload/{template_id}")
+@router.post("/upload/{template_id}/image")
 async def upload_image(template_id: int, file: UploadFile = File(...), db : AsyncSession = Depends(get_db)):
     template = await product_template_service.get_product_template_by_id(template_id = template_id, db = db)
     if not template:
@@ -90,3 +91,13 @@ async def upload_image(template_id: int, file: UploadFile = File(...), db : Asyn
     await product_template_service.update_product_template(template_id=template_id, template_data = template_dict, db = db)
 
     return {"image_url": f"{filepath}"}
+
+@router.get("/{template_id}/image", status_code=status.HTTP_200_OK)
+async def get_product_template_image(template_id : int, db : AsyncSession = Depends(get_db)):
+    product_template = await product_template_service.get_product_template_by_id(template_id=template_id, db = db)
+
+    return FileResponse(
+        path=product_template.image,
+        media_type="image/jpeg",  # rasm turiga qarab (image/png bo'lishi ham mumkin)
+        filename=f"template_{template_id}.jpg"
+    )

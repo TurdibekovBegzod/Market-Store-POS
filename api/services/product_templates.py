@@ -1,9 +1,10 @@
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from datetime import datetime, timezone
-
+from fastapi.responses import FileResponse
+import os
 from api.db.models import ProductTemplate
 from api.schemas.product_templates import ProductTemplate as ProductTemplateSchema
 
@@ -56,7 +57,28 @@ class ProductTemplateService:
             raise HTTPException(
                 status_code = 404,
                 detail = f"Product template with id {template_id} not found")
+
+        if template.image:
+            file_path = template.image 
+            
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"File with path {file_path} not found"
+                    )
+            except Exception as e:
+                raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Error - {e}"
+                    )
+
+        
         
         await db.delete(template)
         await db.commit()
         return True
+    
+

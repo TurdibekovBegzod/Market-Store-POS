@@ -32,7 +32,7 @@ class ProductTemplateRead(ProductTemplate):
 class ProductTemplateUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    attributes: Optional[list['str']] = list()
+    attributes: Optional[list[str]] = None
 
 class ProductTemplateDelete(BaseModel):
     id: int
